@@ -1,0 +1,4 @@
+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
+
+
+$env:DATA_DIR="./data/sample_a"; npx tsx scripts/ingest.ts
