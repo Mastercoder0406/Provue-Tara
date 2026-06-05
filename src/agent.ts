@@ -5,7 +5,7 @@ import {
    getMerchantAliases,
    getFundReturns,
    getHoldingReturns,
-} from "./tools";
+} from "./tools/index";
 
 const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
 
