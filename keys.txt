@@ -2,3 +2,19 @@ sk-ant-api03-sLUU4pJIhtdexvqVBYU-NZe31JrBsR9WydlH95368VgHx6KTqvGsOu-duXH1lAIQgE8
 
 
 $env:DATA_DIR="./data/sample_a"; npx tsx scripts/ingest.ts
+
+
+
+//url
+provue-tara-production.up.railway.app
+
+
+
+database commands
+
+$env:DATABASE_URL="postgresql://postgres:nHgZpmSpxaElJSgiJEXnfmRaxFvtHILw@acela.proxy.rlwy.net:13548/railway"     
+PS C:\Users\Atharva\Desktop\Assignement provogue\provue-tara> $env:DATA_DIR="./data/sample_a"                        
+npx tsx scripts/ingest.ts
+
+
+
