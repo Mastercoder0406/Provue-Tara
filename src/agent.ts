@@ -49,7 +49,7 @@ MATH RULE: report numbers from tool only. Never calculate yourself.
 COMPARE RULE: use mode=compare, report growthSummary field from result.
 FUND RULE: period return=get_fund_returns. personal portfolio=get_holding_returns.`,
 
-   model: groq("llama3-groq-70b-8192-tool-use-preview"),
+   model: groq("llama-3.3-70b-versatile"),
 
    tools: {
       query_transactions: queryTransactions,
