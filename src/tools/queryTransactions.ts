@@ -28,6 +28,19 @@ export const queryTransactions = createTool({
     }) => {
 
         try {
+            console.log(
+                "QUERY TRANSACTION INPUT:",
+                JSON.stringify({
+                    mode,
+                    startDate,
+                    endDate,
+                    category,
+                    merchant,
+                    merchantVariants,
+                    limit,
+                    categoryB,
+                })
+            );
             const conditions: string[] = [];
             const params: any[] = [];
             let p = 1;

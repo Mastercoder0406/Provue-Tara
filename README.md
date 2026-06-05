@@ -1,30 +1,150 @@
-# provue-tara
+# Provue Take-Home: Tara — Finance Research Agent
 
-Welcome to your new [Mastra](https://mastra.ai/) project! We're excited to see what you'll build.
+## What This Is
+Tara is a personal finance research AI agent. Users ask natural language questions about their spending and investments. Tara calls SQL-backed tools to retrieve real numbers and returns grounded answers.
 
-## Getting Started
+**Live URL:** https://provue-tara-production.up.railway.app
 
-Start the development server:
+---
 
-```shell
-npm run dev
+## Quick Start (Local)
+
+### Prerequisites
+- Node.js 18+
+- Docker (for Postgres)
+- Groq API key (free at https://console.groq.com)
+
+### 1. Clone and install
+```bash
+git clone https://github.com/Mastercoder0406/Provue-Tara.git
+cd provue-tara
+npm install
 ```
 
-Open [http://localhost:4111](http://localhost:4111) in your browser to access [Mastra Studio](https://mastra.ai/docs/studio/overview). It provides an interactive UI for building and testing your agents, along with a REST API that exposes your Mastra application as a local service. This lets you start building without worrying about integration right away.
+### 2. Start Postgres
+```bash
+docker run -d --name provue-pg -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16
+```
 
-You can start editing files inside the `src/mastra` directory. The development server will automatically reload whenever you make changes.
+### 3. Create .env
+```
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/provue_tara
+GROQ_API_KEY=your_groq_key_here
+PORT=3000
+```
 
-## Learn more
+### 4. Create database
+```bash
+psql -U postgres -h localhost -c "CREATE DATABASE provue_tara;"
+```
 
-To learn more about Mastra, visit our [documentation](https://mastra.ai/docs/). Your bootstrapped project includes example code for [agents](https://mastra.ai/docs/agents/overview), [tools](https://mastra.ai/docs/agents/using-tools), [workflows](https://mastra.ai/docs/workflows/overview), [scorers](https://mastra.ai/docs/evals/overview), and [observability](https://mastra.ai/docs/observability/overview).
+### 5. Run schema
+```bash
+psql -U postgres -h localhost -d provue_tara -f scripts/schema.sql
+```
 
-If you're new to AI agents, check out our [course](https://mastra.ai/learn) and [YouTube videos](https://youtube.com/@mastra-ai). You can also join our [Discord](https://discord.gg/BTYqqHKUrf) community to get help and share your projects.
+### 6. Ingest sample data
+```bash
+# Mac/Linux
+DATA_DIR=./data/sample_a npx tsx scripts/ingest.ts
 
-## Deploy to the Mastra platform
+# Windows PowerShell
+$env:DATA_DIR="./data/sample_a"; npx tsx scripts/ingest.ts
+```
 
-The [Mastra platform](https://projects.mastra.ai) provides two products for deploying and managing AI applications built with the Mastra framework:
+### 7. Start server
+```bash
+npm start
+```
 
-- **Studio**: A hosted visual environment for testing agents, running workflows, and inspecting traces
-- **Server**: A production deployment target that runs your Mastra application as an API server
+### 8. Test
+```bash
+curl -X POST http://localhost:3000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "How much did I spend in total?"}'
+```
 
-Learn more in the [Mastra platform documentation](https://mastra.ai/docs/mastra-platform/overview).
+---
+
+## Running the Eval Suite
+```bash
+# Make sure server is running first
+npm run eval
+
+# Against deployed URL
+EVAL_URL=https://YOUR-RAILWAY-URL.up.railway.app npm run eval
+```
+
+---
+
+## Ingest Contract
+The ingest script accepts any snapshot path via `DATA_DIR`:
+```bash
+DATA_DIR=./data/sample_a npx tsx scripts/ingest.ts
+DATA_DIR=./data/sample_b npx tsx scripts/ingest.ts
+DATA_DIR=./data/sample_c npx tsx scripts/ingest.ts
+```
+
+Each snapshot must contain `transactions.json`, `funds.json`, `holdings.json`.
+
+---
+
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Yes | Postgres connection string |
+| `GROQ_API_KEY` | Yes | Groq API key (free tier works) |
+| `PORT` | No | Server port (default 3000) |
+
+---
+
+## Model and Provider
+- **Provider:** Groq (free tier)
+- **Model:** llama-3.3-70b-versatile
+- **Why Groq:** Free tier, fast inference, supports tool calling
+
+---
+
+## Deployment
+Deployed on **Railway** with managed Postgres.
+
+- App URL: `https://provue-tara-production.up.railway.app`
+- POST /ask — main endpoint
+- GET /health — health check
+- GET /logs — last 20 request logs
+
+---
+
+## Project Structure
+```
+provue-tara/
+├── data/
+│   ├── sample_a/
+│   ├── sample_b/
+│   └── sample_c/
+├── scripts/
+│   ├── schema.sql      — database schema
+│   ├── ingest.ts       — data loader
+│   └── eval.ts         — evaluation suite
+├── src/
+│   ├── db.ts           — postgres connection
+│   ├── agent.ts        — Tara agent definition
+│   ├── server.ts       — Express POST /ask
+│   └── tools/
+│       ├── queryTransactions.ts
+│       ├── getMerchantAliases.ts
+│       ├── getFundReturns.ts
+│       └── getHoldingReturns.ts
+├── logs/               — request logs (gitignored)
+├── .env                — local secrets (gitignored)
+└── package.json
+```
+
+---
+
+## Known Limitations
+- Groq free tier: 100k tokens/day, 12k TPM — eval runs slowly (10s delay between questions)
+- Cold start on Railway free tier: first request may take 5-10 seconds
+- Relative date "today" is computed at server start, not per request (minor issue)
+- Async milestone not implemented (optional per assignment)

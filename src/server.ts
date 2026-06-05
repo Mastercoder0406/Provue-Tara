@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
 import { tara } from "./agent";
+import { pool } from "./db";
 
 dotenv.config();
 
@@ -134,6 +135,17 @@ app.get("/logs", (_req: any, res: any) => {
     } catch (err: any) {
         return res.status(500).json({ error: err.message });
     }
+});
+
+app.get("/debug-db", async (_req, res) => {
+    const tx = await pool.query(
+        "SELECT COUNT(*) count FROM transactions"
+    );
+
+    res.json({
+        databaseUrl: process.env.DATABASE_URL?.slice(0, 50),
+        transactionCount: tx.rows[0].count,
+    });
 });
 
 const PORT = process.env.PORT ?? 3000;

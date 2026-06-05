@@ -18,3 +18,26 @@ npx tsx scripts/ingest.ts
 
 
 
+Invoke-WebRequest `
+  -Uri "https://provue-tara-production.up.railway.app/ask" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"question": "How much did I spend in total?"}'
+
+
+Invoke-WebRequest `
+  -Uri "https://provue-tara-production.up.railway.app/ask" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"question": "What are my top 5 merchants by spending?"}'
+
+  postgresql://postgres:nHgZpmSpxaElJSgiJEXnfmRaxFvtHILw@acela.proxy.rlwy.net:13548/railway
+
+$env:DATA_DIR="./data/sample_a"
+$env:DATABASE_URL="postgresql://postgres:nHgZpmSpxaElJSgiJEXnfmRaxFvtHILw@acela.proxy.rlwy.net:13548/railway"
+npx tsx scripts/ingest.ts
+
+psql "postgresql://postgres:nHgZpmSpxaElJSgiJEXnfmRaxFvtHILw@acela.proxy.rlwy.net:13548/railway" -c "SELECT COUNT(*) FROM transactions;"
+
+
+PGPASSWORD=nHgZpmSpxaElJSgiJEXnfmRaxFvtHILw psql -h acela.proxy.rlwy.net -U postgres -p 13548 -d railway
