@@ -7,7 +7,7 @@ import { pool } from "./db";
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const LOG_DIR = path.join(process.cwd(), "logs");
