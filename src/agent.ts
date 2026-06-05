@@ -43,7 +43,7 @@ query_transactions requires 8 fields - always provide all 8:
   limit: number always provide 10 if unsure
   categoryB: second category for compare mode or empty string
 
-MERCHANT RULE: always call get_merchant_aliases first then use variantsForQuery in merchantVariants.
+MERCHANT RULE: for top_merchants mode call query_transactions directly. Only call get_merchant_aliases when user asks about a SPECIFIC merchant by name (e.g. Swiggy, Amazon).
 NO DATA RULE: if noData=true say "No data found for X in your records." never invent.
 MATH RULE: report numbers from tool only. Never calculate yourself.
 COMPARE RULE: use mode=compare, report growthSummary field from result.
