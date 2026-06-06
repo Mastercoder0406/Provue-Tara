@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tara — Finance Research Agent</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  .container { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
+
+  /* Header */
+  .header { margin-bottom: 48px; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; background: #1a2332; border: 1px solid #2d3748; border-radius: 20px; padding: 6px 14px; font-size: 13px; color: #68d391; margin-bottom: 20px; }
+  .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #68d391; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  h1 { font-size: 42px; font-weight: 700; color: #f7fafc; margin-bottom: 12px; }
+  h1 span { color: #667eea; }
+  .subtitle { font-size: 17px; color: #a0aec0; line-height: 1.6; }
+
+  /* Status cards */
+  .status-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+  .status-card { background: #1a2332; border: 1px solid #2d3748; border-radius: 12px; padding: 20px; text-align: center; }
+  .status-card .label { font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .status-card .value { font-size: 20px; font-weight: 600; color: #68d391; }
+  .status-card a { color: #667eea; text-decoration: none; font-size: 13px; }
+  .status-card a:hover { text-decoration: underline; }
+
+  /* Section */
+  .section { background: #1a2332; border: 1px solid #2d3748; border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+  .section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #718096; margin-bottom: 20px; }
+
+  /* Endpoint block */
+  .endpoint { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .method { background: #2d4a22; color: #68d391; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; min-width: 48px; text-align: center; }
+  .method.get { background: #1a3a4a; color: #63b3ed; }
+  .path { font-family: 'SF Mono', 'Consolas', monospace; font-size: 15px; color: #e2e8f0; }
+  .desc { font-size: 13px; color: #718096; margin-left: 60px; margin-bottom: 16px; }
+
+  /* Code block */
+  .code-block { background: #0d1117; border: 1px solid #2d3748; border-radius: 10px; padding: 20px; margin-bottom: 16px; position: relative; }
+  .code-label { font-size: 11px; color: #718096; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  pre { font-family: 'SF Mono', 'Consolas', monospace; font-size: 13px; color: #e2e8f0; overflow-x: auto; line-height: 1.6; white-space: pre-wrap; }
+  .copy-btn { position: absolute; top: 12px; right: 12px; background: #2d3748; border: none; color: #a0aec0; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: #4a5568; color: #e2e8f0; }
+  .copy-btn.copied { background: #2d4a22; color: #68d391; }
+
+  /* Try it live */
+  .try-section { background: #1a2332; border: 1px solid #2d3748; border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+  .input-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .question-input { flex: 1; background: #0d1117; border: 1px solid #2d3748; border-radius: 10px; padding: 12px 16px; color: #e2e8f0; font-size: 15px; outline: none; transition: border 0.2s; }
+  .question-input:focus { border-color: #667eea; }
+  .ask-btn { background: #667eea; color: white; border: none; border-radius: 10px; padding: 12px 24px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .ask-btn:hover { background: #5a67d8; }
+  .ask-btn:disabled { background: #2d3748; color: #718096; cursor: not-allowed; }
+  .response-box { background: #0d1117; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; min-height: 80px; font-size: 14px; line-height: 1.6; color: #e2e8f0; display: none; }
+  .response-box.visible { display: block; }
+  .response-box.error { border-color: #e53e3e; color: #fc8181; }
+  .loading { color: #718096; font-style: italic; }
+
+  /* Sample questions */
+  .samples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .sample-q { background: #0d1117; border: 1px solid #2d3748; border-radius: 8px; padding: 6px 12px; font-size: 12px; color: #a0aec0; cursor: pointer; transition: all 0.2s; }
+  .sample-q:hover { border-color: #667eea; color: #667eea; }
+
+  /* Stack info */
+  .stack-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .tag { background: #0d1117; border: 1px solid #2d3748; border-radius: 8px; padding: 6px 14px; font-size: 13px; color: #a0aec0; }
+  .tag span { color: #667eea; }
+
+  /* Footer */
+  .footer { text-align: center; color: #4a5568; font-size: 13px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge"><div class="badge-dot"></div> Live on Railway</div>
+    <h1><span>Tara</span> — Finance Research Agent</h1>
+    <p class="subtitle">A personal finance AI agent. Ask natural language questions about your spending, merchants, and investment portfolio. Every answer is grounded in real database queries — no hallucination.</p>
+  </div>
+
+  <!-- Status -->
+  <div class="status-row">
+    <div class="status-card">
+      <div class="label">Status</div>
+      <div class="value" id="statusVal">Checking...</div>
+    </div>
+    <div class="status-card">
+      <div class="label">Health Check</div>
+      <a href="/health" target="_blank">/health ↗</a>
+    </div>
+    <div class="status-card">
+      <div class="label">Request Logs</div>
+      <a href="/logs" target="_blank">/logs ↗</a>
+    </div>
+  </div>
+
+  <!-- Try it live -->
+  <div class="try-section">
+    <div class="section-title">Try it live</div>
+    <div class="samples">
+      <div class="sample-q" onclick="setQ(this)">How much did I spend in total?</div>
+      <div class="sample-q" onclick="setQ(this)">What are my top 5 merchants by spending?</div>
+      <div class="sample-q" onclick="setQ(this)">How much did I spend on food in March 2025?</div>
+      <div class="sample-q" onclick="setQ(this)">What is my portfolio worth today?</div>
+      <div class="sample-q" onclick="setQ(this)">Which merchants look like recurring subscriptions?</div>
+      <div class="sample-q" onclick="setQ(this)">How much did I spend on rent in April 2025?</div>
+    </div>
+    <div class="input-row">
+      <input class="question-input" id="questionInput" type="text" placeholder="Ask Tara anything about your finances..." />
+      <button class="ask-btn" id="askBtn" onclick="askTara()">Ask Tara</button>
+    </div>
+    <div class="response-box" id="responseBox"></div>
+  </div>
+
+  <!-- API Usage -->
+  <div class="section">
+    <div class="section-title">API — POST /ask</div>
+
+    <div class="endpoint">
+      <div class="method">POST</div>
+      <div class="path">/ask</div>
+    </div>
+    <div class="desc">Send a natural language question. Returns a grounded answer from the database.</div>
+
+    <div class="code-block">
+      <div class="code-label">Request</div>
+      <button class="copy-btn" onclick="copyCode(this, 'req')">Copy</button>
+      <pre id="req">curl -X POST https://provue-tara-production.up.railway.app/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "How much did I spend in total?"}'</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Response</div>
+      <pre>{
+  "answer": "Your total net spend across all transactions is ₹3,54,786.19, which includes gross spend of ₹3,65,975.44 and refunds of -₹11,189.25."
+}</pre>
+    </div>
+
+    <div class="endpoint">
+      <div class="method get">GET</div>
+      <div class="path">/health</div>
+    </div>
+    <div class="desc">Returns server status and timestamp.</div>
+
+    <div class="endpoint">
+      <div class="method get">GET</div>
+      <div class="path">/logs</div>
+    </div>
+    <div class="desc">Returns last 20 request logs with tools called, tables read, latency, and status.</div>
+
+    <div class="code-block">
+      <div class="code-label">Windows PowerShell</div>
+      <button class="copy-btn" onclick="copyCode(this, 'ps')">Copy</button>
+      <pre id="ps">Invoke-WebRequest `
+  -Uri "https://provue-tara-production.up.railway.app/ask" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"question": "What are my top 5 merchants by spending?"}'</pre>
+    </div>
+  </div>
+
+  <!-- What Tara can answer -->
+  <div class="section">
+    <div class="section-title">What you can ask</div>
+    <div class="stack-row">
+      <div class="tag"><span>Spending</span> totals by category or date</div>
+      <div class="tag"><span>Merchants</span> including aliases (Swiggy variants)</div>
+      <div class="tag"><span>Refunds</span> net spend after refunds</div>
+      <div class="tag"><span>Top merchants</span> by net spend</div>
+      <div class="tag"><span>Month-on-month</span> comparisons</div>
+      <div class="tag"><span>Recurring</span> subscription detection</div>
+      <div class="tag"><span>Fund returns</span> NAV period return</div>
+      <div class="tag"><span>Portfolio</span> realised return on holdings</div>
+      <div class="tag"><span>No data</span> honest response when data missing</div>
+    </div>
+  </div>
+
+  <!-- Stack -->
+  <div class="section">
+    <div class="section-title">Built with</div>
+    <div class="stack-row">
+      <div class="tag">Mastra SDK</div>
+      <div class="tag">TypeScript</div>
+      <div class="tag">Groq llama-3.3-70b</div>
+      <div class="tag">PostgreSQL 16</div>
+      <div class="tag">Express 5</div>
+      <div class="tag">Railway</div>
+    </div>
+  </div>
+
+  <div class="footer">Provue Engineering Take-Home — Atharva Dhokte</div>
+</div>
+
+<script>
+  // Check health on load
+  fetch('/health')
+    .then(r => r.json())
+    .then(() => { document.getElementById('statusVal').textContent = '✓ Online'; document.getElementById('statusVal').style.color = '#68d391'; })
+    .catch(() => { document.getElementById('statusVal').textContent = '✗ Offline'; document.getElementById('statusVal').style.color = '#fc8181'; });
+
+  function setQ(el) {
+    document.getElementById('questionInput').value = el.textContent;
+    document.getElementById('questionInput').focus();
+  }
+
+  async function askTara() {
+    const input = document.getElementById('questionInput');
+    const btn = document.getElementById('askBtn');
+    const box = document.getElementById('responseBox');
+    const q = input.value.trim();
+    if (!q) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Asking...';
+    box.className = 'response-box visible';
+    box.innerHTML = '<span class="loading">Tara is thinking...</span>';
+
+    try {
+      const res = await fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        box.className = 'response-box visible';
+        box.textContent = data.answer;
+      } else {
+        box.className = 'response-box visible error';
+        box.textContent = 'Error: ' + (data.details ?? data.error ?? 'Unknown error');
+      }
+    } catch (e) {
+      box.className = 'response-box visible error';
+      box.textContent = 'Network error. Please try again.';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Ask Tara';
+  }
+
+  document.getElementById('questionInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') askTara();
+  });
+
+  function copyCode(btn, id) {
+    const text = document.getElementById(id)?.textContent ?? btn.closest('.code-block').querySelector('pre').textContent;
+    navigator.clipboard.writeText(text.trim());
+    btn.textContent = 'Copied!';
+    btn.className = 'copy-btn copied';
+    setTimeout(() => { btn.textContent = 'Copy'; btn.className = 'copy-btn'; }, 2000);
+  }
+</script>
+</body>
+</html>

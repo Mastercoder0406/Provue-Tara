@@ -122,6 +122,12 @@ app.post("/ask", async (req: any, res: any) => {
     }
 });
 
+
+// Landing page
+app.get("/", (_req: any, res: any) => {
+    res.sendFile(path.join(process.cwd(), "src", "landing.html"));
+});
+
 app.get("/health", (_req: any, res: any) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
